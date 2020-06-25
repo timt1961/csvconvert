@@ -1,4 +1,4 @@
-#! /usr/bin/python
+#! /usr/bin/python3
 #
 # Quick and dirty converter from ING to ABN Amro format
 # Saldo  12 May 13.199,19
@@ -9,7 +9,7 @@ import os
 if __name__ == '__main__':
     outrows=[]
     dates = {}
-    with open(sys.argv[1],'rb') as ing:
+    with open(sys.argv[1],'r') as ing:
         statement = csv.DictReader(ing)
         # Convert the statement into something iterable
         inrows = [x for x in statement]
@@ -31,8 +31,8 @@ if __name__ == '__main__':
             #print(outrow)
             outrows.append(outrow)
 
-    outname = "out-%s-%s.csv" % (outrows[0]['Transactiedatum'],outrows[-1]['Transactiedatum'])
-    with open(outname,'wb') as abn:
+    outname = "%s-out-%s-%s.csv" % (sys.argv[2],outrows[0]['Transactiedatum'],outrows[-1]['Transactiedatum'])
+    with open(outname,'w') as abn:
         saldo = 0
         newsaldo = 0
         for row in outrows:
