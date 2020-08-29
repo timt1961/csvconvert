@@ -10,11 +10,13 @@ if __name__ == '__main__':
     outrows=[]
     dates = {}
     with open(sys.argv[1],'r') as ing:
-        statement = csv.DictReader(ing)
+        statement = csv.DictReader(ing,delimiter=';')
         # Convert the statement into something iterable
+        print(statement)
         inrows = [x for x in statement]
         # Reverse the order of elements (ING uses latest first)
         for inrow in inrows[::-1]:
+            print(inrow)
             outrow = {}
             outrow['Transactiedatum'] = inrow['Datum']
             outrow['Rentedatum'] = inrow['Datum']
