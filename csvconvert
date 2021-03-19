@@ -32,13 +32,59 @@ def load_ing_file(infile):
                 bedragcnt = -1 * bedragcnt
             outrow['Beginsaldo'] = 0
             outrow['Eindsaldo'] = 0
-            outrow['Transactiebedrag'] = bedragcnt
+            outrow['Transactiebedrag'] = bedragcnt/100.0
             outrow['Omschrijving'] = '"' + inrow['Naam / Omschrijving'] \
                                 + " " + inrow['Mededelingen'] + '"'
             #print(outrow)
             outrows.append(outrow)
 
     return outrows
+
+def convert_rabo_bedrag( bedragstr):
+    if bedragstr.startswith('+'):
+        multiplier = 1.0
+    else:
+        multiplier = -1.0
+    bedragstr = bedragstr[1:]
+            
+    (euros, cent) = bedragstr.split(',')
+    print( "%d %d\n" % (int(euros), int(cent)))
+    bedragcnt = multiplier *(100*int(euros) + int(cent))
+    return bedragcnt
+    
+def load_rabo_file(infile):
+    outrows=[]
+    dates = {}
+    with open(infile,'r', encoding='iso-8859-1') as rabo:
+        dialect = csv.Sniffer().sniff(rabo.read(1024))
+        rabo.seek(0)
+        print(dialect.delimiter)
+        statement = csv.DictReader(rabo,dialect=dialect)
+        #statement=csv.reader(rabo, dialect)
+        # Convert the statement into something iterable
+        print(statement)
+        inrows = [x for x in statement]
+        # Reverse the order of elements (ING uses latest first)
+        for inrow in inrows:
+#            print(inrow)
+            outrow = {}
+            outrow['Transactiedatum'] = inrow['Datum'].replace('-', '')
+            outrow['Rentedatum'] = inrow['Rentedatum'].replace('-', '')
+            bedragcnt = convert_rabo_bedrag(inrow['Bedrag'])
+            outrow['Beginsaldo'] = 0
+            saldocnt = convert_rabo_bedrag(inrow['Saldo na trn'])
+            print( "Saldocnt: %d bedragcnt:%d)" % (saldocnt, bedragcnt))
+            outrow['Eindsaldo'] = saldocnt
+            
+            outrow['Transactiebedrag'] = bedragcnt
+            
+            outrow['Omschrijving'] = '"' + inrow['Naam tegenpartij'] \
+                                + " " + inrow['Omschrijving-1'] + '"'
+            print(outrow)
+            outrows.append(outrow)
+
+    return outrows
+
 def write_abn_file( outfile, outrows):
     with open(outfile,'w') as abn:
         saldo = 0
@@ -52,15 +98,21 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Convert to ABN format")
     parser.add_argument('-i', '--infile',type=str,required=True)
     parser.add_argument('-o', '--outfile', type=str)
+    parser.add_argument('-b', '--bank', type=str,default='ing') 
     args = parser.parse_args()
 
 
     print(args.infile)
-    
-    outrows = load_ing_file(args.infile)
+    if args.bank == 'ing':
+        outrows=load_ing_file(args.infile)
+    elif args.bank == 'rabo':
+        outrows = load_rabo_file(args.infile)
+    else:
+        print ("Unknown bank %s" % bank)
+        sys.exit( -1)
 
     if not args.outfile:
-        args.outfile = "out-%s-%s.csv" % (outrows[0]['Transactiedatum'],outrows[-1]['Transactiedatum'])
+        args.outfile = "out-%s-%s-%s.csv" % (args.bank,outrows[0]['Transactiedatum'],outrows[-1]['Transactiedatum'])
     print(args.outfile)
 
         
