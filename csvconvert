@@ -108,7 +108,7 @@ if __name__ == '__main__':
     elif args.bank == 'rabo':
         outrows = load_rabo_file(args.infile)
     else:
-        print ("Unknown bank %s" % bank)
+        print ("Unknown bank %s" % args.bank)
         sys.exit( -1)
 
     if not args.outfile:
