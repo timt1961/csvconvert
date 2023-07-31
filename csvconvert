@@ -75,9 +75,9 @@ def load_rabo_file(infile):
             saldocnt = convert_rabo_bedrag(inrow['Saldo na trn'])
             print( "Saldocnt: %d bedragcnt:%d)" % (saldocnt, bedragcnt))
             outrow['Eindsaldo'] = saldocnt/100.0
-            
+
             outrow['Transactiebedrag'] = bedragcnt/100.0
-            
+
             outrow['Omschrijving'] = '"' + inrow['Naam tegenpartij'] \
                                 + " " + inrow['Omschrijving-1'] + '"'
             print(outrow)
@@ -98,9 +98,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Convert to ABN format")
     parser.add_argument('-i', '--infile',type=str,required=True)
     parser.add_argument('-o', '--outfile', type=str)
-    parser.add_argument('-b', '--bank', type=str,default='ing') 
+    parser.add_argument('-b', '--bank', type=str,default='ing')
     args = parser.parse_args()
 
+    print("Note: there should be a go version of this in ~/go/bin")
 
     print(args.infile)
     if args.bank == 'ing':
@@ -114,8 +115,4 @@ if __name__ == '__main__':
     if not args.outfile:
         args.outfile = "out-%s-%s-%s.csv" % (args.bank,outrows[0]['Transactiedatum'],outrows[-1]['Transactiedatum'])
     print(args.outfile)
-
-        
     write_abn_file( args.outfile, outrows)
-    
-    
